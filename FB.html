@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Facebook Redirect</title>
+<script>
+    // Run when page loads
+    window.onload = function () {
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get("code");
+
+        if (code) {
+            // store code for later use
+            localStorage.setItem("fb_oauth_code", code);
+
+            // redirect to your posting page
+            window.location.href = "post.html";  // <-- change if needed
+        } else {
+            document.body.innerHTML = "<h3>No OAuth code found.</h3>";
+        }
+    };
+</script>
+</head>
+<body>
+<h2>Redirecting…</h2>
+</body>
+</html>

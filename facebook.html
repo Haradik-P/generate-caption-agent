@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Facebook Login</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        padding: 30px;
+    }
+
+    h2 {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+
+    .fb-login-btn {
+        background-color: #1877F2;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 18px;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0px 3px 10px rgba(0,0,0,0.2);
+        margin-bottom: 15px;
+    }
+
+    .fb-login-btn:hover {
+        background-color: #0d65d9;
+    }
+
+    .not-you-link {
+        display: inline-block;
+        font-size: 16px;
+        color: #e53935;
+        text-decoration: underline;
+        cursor: pointer;
+        margin-top: 5px;
+        font-weight: bold;
+    }
+
+    .not-you-link:hover {
+        color: #c62828;
+    }
+
+    .note {
+        margin-top: 15px;
+        font-size: 14px;
+        color: #555;
+        max-width: 400px;
+        line-height: 1.5;
+    }
+</style>
+</head>
+
+<body>
+
+<h2>Login With Facebook</h2>
+
+<!-- FB Login Button -->
+<a class="fb-login-btn"
+   href="https://www.facebook.com/v19.0/dialog/oauth?client_id=2336853050122260&redirect_uri=http://localhost:8000/post.html&response_type=code
+&scope=public_profile,email">
+    <i class="fab fa-facebook"></i>
+    Continue with Facebook
+</a>
+
+<br>
+
+<!-- FORCE LOGOUT + FORCE NEW ACCOUNT LOGIN -->
+<a class="not-you-link"
+   href="https://www.facebook.com/v19.0/dialog/oauth?
+            client_id=2336853050122260
+            &redirect_uri=http://localhost:8000/post.html
+            &auth_type=reauthenticate
+            &force_reauth=1
+            &enable_profile_selector=1
+            &display=popup">
+    Not You? Login with another account
+</a>
+
+
+<p class="note">
+    If the wrong Facebook account appears, click <b>"Not You?"</b> — this will force
+    Facebook to log out the current user and allow logging in with a different account.
+</p>
+
+</body>
+</html>
+

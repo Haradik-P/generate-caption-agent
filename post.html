@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Create Post</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f3f4f6;
+    }
+
+    /* Main overlay box like Buffer */
+    .composer-wrapper {
+        width: 100%;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 30px;
+        box-sizing: border-box;
+    }
+
+    .composer-box {
+        width: 90%;
+        height: 92vh;
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.12);
+        display: flex;
+        overflow: hidden;
+    }
+
+    /* Left panel (Editor) */
+    .left-panel {
+        width: 60%;
+        padding: 28px;
+        border-right: 1px solid #e5e7eb;
+        overflow-y: auto;
+    }
+
+    .left-panel h2 {
+        font-size: 20px;
+        margin: 0;
+        margin-bottom: 20px;
+        font-weight: bold;
+    }
+
+    /* Textarea */
+    .post-area {
+        width: 100%;
+        height: 220px;
+        border: none;
+        outline: none;
+        font-size: 18px;
+        padding: 15px 5px;
+        resize: none;
+        background: transparent;
+    }
+
+    /* Media upload box */
+    .upload-box {
+        border: 2px dashed #c5c6d0;
+        border-radius: 12px;
+        padding: 35px;
+        text-align: center;
+        color: #7d7f87;
+        margin-top: 20px;
+        cursor: pointer;
+    }
+
+    .upload-box:hover {
+        background: #f9fafb;
+    }
+
+    .media-preview img,
+    .media-preview video {
+        width: 80px;        /* small thumbnail */
+        height: 80px;
+        object-fit: cover;
+        border-radius: 10px;
+        margin-top: 10px;
+
+    }
+
+    /* Bottom Bar */
+    .bottom-bar {
+        margin-top: 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* Buttons */
+    .btn {
+        padding: 10px 22px;
+        border-radius: 8px;
+        border: none;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    .btn-ai {
+        background: #6c5ce7;
+        color: white;
+    }
+
+    .btn-schedule {
+        background: #f59e0b;
+        color: white;
+    }
+
+    .btn-post {
+        background: #1877f2;
+        color: white;
+    }
+
+    .schedule-row {
+        margin-top: 15px;
+        display: flex;
+        gap: 10px;
+    }
+
+    /* Right Preview Panel */
+    .right-panel {
+        width: 40%;
+        padding: 25px;
+        background: #fafafa;
+        overflow-y: auto;
+    }
+
+    .preview-card {
+        border: 1px solid #ddd;
+        padding: 20px;
+        border-radius: 14px;
+        background: white;
+        margin-top: 10px;
+        text-align: center;
+        color: #757575;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="composer-wrapper">
+<div class="composer-box">
+
+    <!-- LEFT SIDE (EDITOR) -->
+    <div class="left-panel">
+        <h2>Create Post</h2>
+
+        <textarea id="caption" class="post-area" placeholder="What would you like to share?"></textarea>
+
+        <!-- Media Upload Box -->
+        <div class="upload-box" onclick="document.getElementById('mediaInput').click()">
+            <i class="fa-solid fa-image"></i><br><br>
+            Drag & drop or click to upload
+        </div>
+        <input type="file" id="mediaInput" accept="image/*,video/*" multiple style="display:none">
+
+        <!-- Preview -->
+        <div id="mediaPreview" class="media-preview"></div>
+
+        <!-- Schedule Input -->
+        <div class="schedule-row">
+            <input type="datetime-local" id="scheduleTime" class="btn" style="flex:1; border:1px solid #ddd;">
+        </div>
+
+        <div class="bottom-bar">
+            <button class="btn btn-ai" onclick="generateCaption()">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> AI Assist
+            </button>
+
+            <div>
+                <button class="btn btn-schedule" onclick="schedulePost()">Schedule</button>
+                <button class="btn btn-post" onclick="postToFacebook()">Post Now</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- RIGHT SIDE (PREVIEW) -->
+    <div class="right-panel">
+        <h3> Facebook Preview</h3>
+
+        <div id="previewCard" class="preview-card">
+            Your post preview will appear here
+        </div>
+    </div>
+
+</div>
+</div>
+
+<script>
+// * Facebook code check *
+const fbCode = localStorage.getItem("fb_oauth_code");
+print("fbCode")
+if (!fbCode) {
+    alert("Please login again.");
+    window.location.href = "index.html";
+}
+
+/* ===========================
+   MEDIA PREVIEW + LIVE PREVIEW
+   =========================== */
+document.getElementById("mediaInput").addEventListener("change", function(event) {
+    const previewDiv = document.getElementById("mediaPreview");
+    const previewCard = document.getElementById("previewCard");
+
+    previewDiv.innerHTML = "";
+    previewCard.innerHTML = "";
+
+    [...event.target.files].forEach(file => {
+        const url = URL.createObjectURL(file);
+
+        // Thumbnail preview
+        if (file.type.startsWith("image")) {
+            previewDiv.innerHTML += `<img src="${url}">`;
+        } else if (file.type.startsWith("video")) {
+            previewDiv.innerHTML += `<video src="${url}" controls></video>`;
+        }
+
+        // Large preview
+        previewCard.innerHTML += `
+            <div class="media-block">
+                ${file.type.startsWith("image")
+                    ? `<img src="${url}" style="width:100%;border-radius:12px;margin-top:10px;">`
+                    : `<video src="${url}" controls style="width:100%;border-radius:12px;margin-top:10px;"></video>`
+                }
+            </div>
+        `;
+    });
+
+    insertCaptionIntoPreview();
+});
+
+/* LIVE PREVIEW: Caption */
+document.getElementById("caption").addEventListener("input", insertCaptionIntoPreview);
+
+function insertCaptionIntoPreview() {
+    const caption = document.getElementById("caption").value;
+    const preview = document.getElementById("previewCard");
+
+    // Save media HTML temporarily
+    const media = [...preview.querySelectorAll("img, video")]
+        .map(el => el.outerHTML)
+        .join("");
+
+    preview.innerHTML = `
+        <p style="text-align:left;font-size:16px;white-space:pre-wrap;">${caption}</p>
+        ${media}
+    `;
+}
+
+/* ======================
+   AI CAPTION GENERATION
+   ======================*/
+async function generateCaption() {
+    const files = document.getElementById("mediaInput").files;
+
+    if (files.length === 0) {
+        alert("Upload an image or video first!");
+        return;
+    }
+
+    const base64Files = await Promise.all([...files].map(file => toBase64(file)));
+
+    const response = await fetch("http://localhost:8000/generate-caption", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ media: base64Files })
+    });
+
+    const data = await response.json();
+
+    document.getElementById("caption").value = data.caption;
+    insertCaptionIntoPreview();
+}
+
+/* ======================
+   POST IMMEDIATELY
+   ======================*/
+async function postToFacebook() {
+    const caption = document.getElementById("caption").value;
+    if (!caption.trim()) return alert("Caption is empty!");
+
+    const response = await fetch("http://localhost:8000/post-to-facebook", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: fbCode, caption })
+    });
+
+    const result = await response.json();
+    alert(result.message);
+}
+
+/* ======================
+   SCHEDULE POST
+   ======================*/
+async function schedulePost() {
+    const caption = document.getElementById("caption").value;
+    const scheduleTime = document.getElementById("scheduleTime").value;
+
+    if (!caption.trim()) return alert("Caption is empty!");
+    if (!scheduleTime) return alert("Select date & time!");
+
+    const response = await fetch("http://localhost:8000/schedule-post", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: fbCode, caption, scheduleTime })
+    });
+
+    const result = await response.json();
+    alert(result.message);
+}
+
+/* Convert file to Base64 */
+function toBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = err => reject(err);
+    });
+}
+</script>
+
+
+</body>
+</html>
